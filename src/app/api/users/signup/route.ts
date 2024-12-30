@@ -7,10 +7,10 @@ import bcryptjs from "bcryptjs";
 connect();
 
 export async function POST(req: NextRequest) {
-  // console.log("Signup clicked");
+  console.log("Signup clicked");
   try {
     const { username, email, password } = await req.json();
-    // console.log(username, email, password);
+    console.log(username, email, password);
 
     // check if user already exists
     const user = await User.findOne({ email });

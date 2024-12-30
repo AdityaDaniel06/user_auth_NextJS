@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import axios from "axios";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function SignupPage() {
   const [user, setUser] = useState({
@@ -11,16 +15,42 @@ export default function SignupPage() {
     username: "",
   });
 
+  const router = useRouter();
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const onSignup = async () => {
     console.log("Signup clicked", user);
+
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/signup", user);
+      console.log(response.data);
+      toast.success("Signup successful");
+      router.push("/login");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (user.email.length > 0 && user.password.length > 0) {
+      setError(false);
+    } else {
+      setError(true);
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Signup Card */}
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Signup Page
+          {loading ? "Creating a new Account..." : "Signup"}
         </h1>
 
         {/* Email Input */}
@@ -33,7 +63,7 @@ export default function SignupPage() {
           </label>
           <input
             type="email"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             name="email"
             placeholder="Enter your email"
             value={user.email}
@@ -51,7 +81,7 @@ export default function SignupPage() {
           </label>
           <input
             type="text"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             name="username"
             placeholder="Enter your username"
             value={user.username}
@@ -69,7 +99,7 @@ export default function SignupPage() {
           </label>
           <input
             type="password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             name="password"
             placeholder="Enter your password"
             value={user.password}
@@ -80,9 +110,14 @@ export default function SignupPage() {
         {/* Signup Button */}
         <button
           onClick={onSignup}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition duration-300"
+          className={`w-full py-3 rounded-lg font-medium transition duration-300 ${
+            error
+              ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+          disabled={error}
         >
-          Signup
+          {error ? "Enter some Values" : "Signup"}
         </button>
       </div>
 
